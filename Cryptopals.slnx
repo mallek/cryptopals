@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Cryptopals/Cryptopals.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Cryptopals.Tests/Cryptopals.Tests.csproj" />
+  </Folder>
+</Solution>
