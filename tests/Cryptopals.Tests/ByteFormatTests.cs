@@ -34,26 +34,16 @@ public class ByteFormatTests
         bytes.Should().Equal(0x48, 0x09, 0x69);
     }
 
-    // The payoff test: decode Challenge 1's hex input and read the hidden message.
-    //
-    // Blocked (deliberately): this needs a public hex→bytes method, but hex decoding
-    // currently lives as a private helper inside Challenge01. Extracting a public
-    // Hex codec is already on the roadmap — Challenge 2 needs it too.
-    // [Fact(Skip = "...")] shows as yellow in test results: an acknowledged IOU,
-    // visible every run, unlike a TODO comment that vanishes into the codebase.
-    [Fact(Skip = "Requires a public hex decoder — extract one when starting Challenge 2")]
+    [Fact]
     public void ToAscii_Challenge1Bytes_RevealTheHiddenMessage()
     {
         const string hexInput =
             "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
-
-        // TODO once hex decoding is public:
-        //   bytes = <decode hexInput>
-        //   bytes.ToAscii().Should().Be("I'm killing your brain like a poisonous mushroom");
-        Assert.Fail("Unblock me by extracting a public hex decoder");
+        
+          var bytes = Hex.Decode(hexInput);
+          bytes.ToAscii().Should().Be("I'm killing your brain like a poisonous mushroom");
     }
 
-    // Bonus: test the single-byte overload too, which is just a wrapper around the array version.
     [Fact]
     public void ToAscii_ByteOverload_FormatsSingleByte()
     {        
