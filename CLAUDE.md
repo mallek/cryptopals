@@ -32,11 +32,16 @@ dotnet build                                             # build everything
 
 ## Architecture
 
-- **.NET 10, xunit, central package management** (`Directory.Packages.props` pins versions; csproj files reference packages without versions). Solution file is `Cryptopals.slnx`.
-- **`src/Cryptopals/`** — the crypto library. One folder per set (`Set01/`, `Set02/`, …), one static class per challenge (`Challenge01.cs`). As challenges build on each other, reusable primitives (hex codec, base64 codec, XOR, scoring, etc.) get extracted here for later challenges to reuse.
-- **`tests/Cryptopals.Tests/`** — mirrors the set/challenge structure. Each challenge is solved as a test: cryptopals provides a known input/output pair, so the test asserting that pair *is* the deliverable. Green test = challenge complete.
+- **.NET 10, xunit + AwesomeAssertions, central package management** (`Directory.Packages.props` pins versions; csproj files reference packages without versions). Solution file is `Cryptopals.slnx`.
+- **`src/Cryptopals/`** — the library primitives: codecs (`Hex`, `Base64`), ciphers (`Xor`), visualization (`BitFormat`, `ByteFormat`). Challenges live in set folders (`Set01/`, `Set02/`, …) as thin compositions of primitives — if a challenge method grows past a few lines, something in it wants to become a primitive.
+- **`tests/Cryptopals.Tests/`** — mirrors src. Primitives get full test suites; each challenge gets a test asserting the known cryptopals answer. Green test = challenge complete.
 
 ## Conventions
 
-- Solution code favors clarity over cleverness: explanatory comments on the math/bit operations, named intermediate variables, and debug output that shows binary representations of each transformation step.
+- **Trace sink pattern**: primitives and challenges take an optional `Action<string>? trace = null`. Tests pass `ITestOutputHelper.WriteLine` so test output shows the bit-level walkthrough. Primitives trace *mechanics* (bit math); challenges trace *meaning* (the story, ASCII reveals).
+- **Codec naming**: `Decode` goes toward bytes, `Encode` goes toward text. All codecs follow this.
+- **Visualization is read-only**: formatters never modify their input. Every formatter has a purity test.
+- **Test discipline**: exception tests assert on the message (`.WithMessage("*…*")`) so accidental exceptions can't satisfy them; boundary values get tests on both sides; stubs start red (`Assert.Fail`), never silently green.
+- Solution code favors clarity over cleverness: explanatory comments on the math/bit operations, named intermediate variables.
 - Update the README progress checklist when a challenge is completed.
+- Commit working state before refactoring. Use selective staging so each commit tells one story and builds green on its own.
