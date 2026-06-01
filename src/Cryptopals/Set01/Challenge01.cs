@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace Cryptopals.Set01;
 
 /// <summary>
@@ -12,22 +10,31 @@ public static class Challenge01
     /// Decode a hex string to its raw bytes, then re-encode those bytes as base64.
     /// Always operate on the raw bytes — never go hex-string -> base64-string directly.
     /// </summary>
-    public static string HexToBase64(string hex)
+    public static string HexToBase64(string hex, Action<string>? trace = null)
     {
+        trace?.Invoke($"hex input ({hex.Length} chars): {hex}");
+        trace?.Invoke("");
+        trace?.Invoke("─── Hex → Bytes ───");
+
         List<byte> byteList = new List<byte>();
 
         for (int i = 0; i < hex.Length; i += 2)
         {
             string segment = hex.Substring(i, 2);
-            byte b = HexPairToByte(segment);
+            byte b = HexPairToByte(segment, trace);
             byteList.Add(b);
         }
 
         byte[] bytes = byteList.ToArray();
-        return ConvertBytesToBase64(bytes);
+        trace?.Invoke($"decoded ({bytes.Length} bytes): \"{bytes.ToAscii()}\"");
+        trace?.Invoke("");
+
+        string base64 = ConvertBytesToBase64(bytes, trace);
+        trace?.Invoke($"result: {base64}");
+        return base64;
     }
 
-    private static string ConvertBytesToBase64(byte[] bytes)
+    private static string ConvertBytesToBase64(byte[] bytes, Action<string>? trace)
     {
         // 1. Calculate how much padding the original input needs to be a multiple of 3 bytes (24 bits)
         int remainder = bytes.Length % 3;
@@ -39,38 +46,48 @@ public static class Challenge01
 
         // 3. Process the padded byte array in 3-byte (24-bit) blocks
         List<char> resultChars = new List<char>();
+        trace?.Invoke("─── Bytes → Base64 ───");
         for (int i = 0; i < paddedBytes.Length; i += 3)
         {
+            trace?.Invoke($"Block {i / 3}  \"{new[] { paddedBytes[i], paddedBytes[i + 1], paddedBytes[i + 2] }.ToAscii()}\"");
+            trace?.Invoke($"  bytes    {paddedBytes[i].ToBinary()} {paddedBytes[i + 1].ToBinary()} {paddedBytes[i + 2].ToBinary()}   0x{paddedBytes[i]:X2} 0x{paddedBytes[i + 1]:X2} 0x{paddedBytes[i + 2]:X2}");
             // Combine 3 bytes into one 24-bit integer
             // First byte shifted left 16 bits, second left 8 bits, third stays as-is
-            int block24Bits = (paddedBytes[i] << 16) | (paddedBytes[i + 1] << 8) | paddedBytes[i + 2];
+            // Pure math alternative to the bitwise operations
+            int block24Bits = (paddedBytes[i] << 16) + (paddedBytes[i + 1] << 8) + paddedBytes[i + 2];
+            trace?.Invoke($"  packed   {block24Bits.ToBinary(24)}   ({block24Bits:N0})");
 
             // Slice into four 6-bit decimal values using shift and mask (0x3F is binary 00111111)
             int c1 = (block24Bits >> 18) & 0x3F;
             int c2 = (block24Bits >> 12) & 0x3F;
             int c3 = (block24Bits >> 6) & 0x3F;
             int c4 = block24Bits & 0x3F;
+            trace?.Invoke($"  sliced   {c1.ToBinary(6)} | {c2.ToBinary(6)} | {c3.ToBinary(6)} | {c4.ToBinary(6)}");
+            trace?.Invoke($"  values   {c1,6} | {c2,6} | {c3,6} | {c4,6}");
 
             // Convert the 6-bit decimals to Base64 characters using your helper method
             resultChars.Add(IntToBase64Char(c1));
             resultChars.Add(IntToBase64Char(c2));
             resultChars.Add(IntToBase64Char(c3));
             resultChars.Add(IntToBase64Char(c4));
+            trace?.Invoke($"  chars    {resultChars[resultChars.Count - 4],6} | {resultChars[resultChars.Count - 3],6} | {resultChars[resultChars.Count - 2],6} | {resultChars[resultChars.Count - 1],6}");
 
             // 5. Overwrite the trailing characters with '=' padding if the original input wasn't a multiple of 3
             if (i + 3 > bytes.Length) // If we added padding bytes
             {
+                trace?.Invoke($"  padding  last {paddingCount} char(s) overwritten with '='");
                 for (int j = 0; j < paddingCount; j++)
                 {
                     resultChars[resultChars.Count - 1 - j] = '=';
                 }
             }
+            trace?.Invoke("");
         }
         return new string(resultChars.ToArray());
     }
 
 
-    static byte HexPairToByte(string segment)
+    static byte HexPairToByte(string segment, Action<string>? trace)
     {
         char highChar = segment[0];
         char lowChar = segment[1];
@@ -82,11 +99,8 @@ public static class Challenge01
         int shiftedHigh = highVal * 16;
         int finalDecimal = shiftedHigh + lowVal;
 
-        Debug.WriteLine($"--- Hex Segment: {segment} ---");
-        Debug.WriteLine($"High: '{highChar}' -> {highVal,2} -> Binary: {IntTo4BitBinary(highVal)}");
-        Debug.WriteLine($"Math: {highVal} * 16   -> {shiftedHigh,2} -> Binary: {IntTo8BitBinary(shiftedHigh)} (Shifted left 4 bits)");
-        Debug.WriteLine($"Low:  '{lowChar}' -> {lowVal,2} -> Binary: {IntTo4BitBinary(lowVal)}");
-        Debug.WriteLine($"Math: {shiftedHigh} + {lowVal}  -> {finalDecimal,2} -> Binary: {IntTo8BitBinary(finalDecimal)}");
+        // One line per pair: hex → high/low nibbles → byte value → character
+        trace?.Invoke($"  {segment} → {highVal.ToBinary(4)} {lowVal.ToBinary(4)} → {finalDecimal,3}  '{((byte)finalDecimal).ToAscii()}'");
 
         return (byte)finalDecimal;
     }
@@ -107,25 +121,5 @@ public static class Challenge01
         if (val == 62) return '+';
         if (val == 63) return '/';
         throw new ArgumentException("Invalid base64 value");
-    }
-
-    static string IntTo4BitBinary(int val)
-    {
-        char[] bits = new char[4];
-        for (int i = 3; i >= 0; i--)
-        {
-            bits[3 - i] = (val & (1 << i)) != 0 ? '1' : '0';
-        }
-        return new string(bits);
-    }
-
-    static string IntTo8BitBinary(int val)
-    {
-        char[] bits = new char[8];
-        for (int i = 7; i >= 0; i--)
-        {
-            bits[7 - i] = (val & (1 << i)) != 0 ? '1' : '0';
-        }
-        return new string(bits);
     }
 }

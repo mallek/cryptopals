@@ -13,4 +13,9 @@ public static class ByteFormat
         char[] chars = [.. bytes.Select(b => (b >= ' ' && b <= '~') ? (char)b : '·')];
         return new string(chars);
     }
+
+    public static string ToAscii(this byte b)
+    {
+        return new byte[] { b }.ToAscii();
+    }
 }

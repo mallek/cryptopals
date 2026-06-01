@@ -52,4 +52,13 @@ public class ByteFormatTests
         //   bytes.ToAscii().Should().Be("I'm killing your brain like a poisonous mushroom");
         Assert.Fail("Unblock me by extracting a public hex decoder");
     }
+
+    // Bonus: test the single-byte overload too, which is just a wrapper around the array version.
+    [Fact]
+    public void ToAscii_ByteOverload_FormatsSingleByte()
+    {        
+        byte value = 0x48; // 'H'
+        string sut = value.ToAscii();
+        sut.Should().Be("H"); 
+    }
 }
