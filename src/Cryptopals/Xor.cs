@@ -24,4 +24,16 @@ public static class Xor
         
         return result.ToArray();
     }
+
+    /// <summary>
+    /// XOR every byte of <paramref name="data"/> against a single repeated key byte.
+    /// This is both the cipher (encrypt) and its inverse (decrypt) — same operation, same as Apply.
+    /// </summary>
+    public static byte[] SingleByte(byte[] data, byte key, Action<string>? trace = null)
+    {
+        // TODO: data[i] ^ key for every byte. Pure — data comes out unchanged.
+        // Hint: this is just Apply against a buffer that is `key` repeated data.Length times...
+        // but you can also write it directly. Your call which reads cleaner.
+        throw new NotImplementedException();
+    }
 }
