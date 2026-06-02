@@ -13,10 +13,6 @@ public class Challenge03Tests
         _output = output;
     }
 
-    // The honest version of this challenge: cryptopals does NOT publish the answer.
-    // You discover the key and plaintext by running your cracker, confirm they're
-    // right by READING the output, then pin them here so a regression can't silently
-    // break your solver. (So this test starts as a discovery run, then becomes a lock.)
     [Fact]
     public void Crack_RecoversTheHiddenMessage()
     {
@@ -31,8 +27,17 @@ public class Challenge03Tests
         _output.WriteLine($"text = \"{result.Plaintext.ToAscii()}\"");
 
         // TODO: once you've SEEN the answer, replace these with the real key and text.
-        //   result.Key.Should().Be(0x??);
-        //   result.Plaintext.ToAscii().Should().Be("...");
-        Assert.Fail("Run me, read the trace, then pin the discovered key and plaintext");
+        result.Key.Should().Be(0x58);
+        result.Plaintext.ToAscii().Should().Be("Cooking MC's like a pound of bacon");
+    }
+
+    //Add a regression case: encrypt a known string with key 0xFF, assert you recover it.
+    [Fact]
+    public void Crack_RecoversKnownMessage()
+    {
+        byte[] ciphertext = Xor.SingleByte("Hello, World!".ToBytes(), 0xFF);
+        CrackResult result = Challenge03.Crack(ciphertext);
+        result.Key.Should().Be(0xFF);
+        result.Plaintext.ToAscii().Should().Be("Hello, World!");
     }
 }

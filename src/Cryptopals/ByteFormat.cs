@@ -18,4 +18,10 @@ public static class ByteFormat
     {
         return new byte[] { b }.ToAscii();
     }
+
+    //string to byte array
+    public static byte[] ToBytes(this string str)
+    {
+        return str.Select(c => (byte)c).ToArray();
+    }
 }

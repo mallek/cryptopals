@@ -14,13 +14,94 @@ namespace Cryptopals;
 /// </summary>
 public static class EnglishScore
 {
+
+    public static readonly Dictionary<char, double> Frequencies;
+
+    static EnglishScore()
+    {
+        Frequencies = CorpusAnalysis(CorpusText);
+    }
+
     /// <summary>
     /// Return a number representing how English-like the bytes are.
     /// </summary>
     public static double Score(byte[] bytes, Action<string>? trace = null)
     {
-        // TODO: this is question 3. Start as simple as you can get away with —
-        // you can always sharpen it later if it can't tell two candidates apart.
-        throw new NotImplementedException();
+        // Per-character breakdown. Fires only when traced — which (because Crack
+        // withholds the sink during its 256-key search) means only for the winner.
+        trace.Detail($"{"char",-6}{"class",-12}{"value",8}{"running",10}");
+
+        double score = 0;
+        foreach (byte b in bytes)
+        {
+            double charScore;
+            string cls;
+
+            if (b < 32 || b > 126)
+            {
+                charScore = -5;            // Unprintable: strong negative signal.
+                cls = "unprintable";
+            }
+            else if (char.IsLetter((char)b) || b == ' ')
+            {
+                // Letters and space, weighted by their frequency in English text.
+                // Space carries the most weight — it is the most common character in English.
+                char upper = char.ToUpper((char)b);
+                charScore = Frequencies.GetValueOrDefault(upper, 0);
+                cls = b == ' ' ? "space" : "letter";
+            }
+            else
+            {
+                charScore = 0.5;           // Other printable (punctuation, digits): small positive.
+                cls = "other";
+            }
+
+            score += charScore;
+            trace.Detail($"{"'" + ((byte)b).ToAscii() + "'",-6}{cls,-12}{charScore,8:F2}{score,10:F2}");
+        }
+
+        trace.Detail($"{"TOTAL",-26}{score,10:F2}");
+        return score;
     }
+
+    public static Dictionary<char, double> CorpusAnalysis(string text, Action<string>? trace = null)
+    {
+        Dictionary<char, int> frequency = new Dictionary<char, int>();
+        int totalChars = 0;
+
+        foreach (char c in text)
+        {
+            if (char.IsLetter(c) || c == ' ')
+            {
+                char upperC = char.ToUpper(c);
+                if (!frequency.ContainsKey(upperC))
+                    frequency[upperC] = 0;
+                frequency[upperC]++;
+                totalChars++;
+            }
+        }
+
+        Dictionary<char, double> frequencyPercentages = new Dictionary<char, double>();
+        foreach (var key in frequency.Keys.ToList())
+        {
+            frequencyPercentages[key] = (frequency[key] / (double)totalChars) * 100;
+        }
+
+        return frequencyPercentages;
+    }
+
+      public static string CorpusText =
+    """
+    The night that William Jones's world changed began like any other.
+
+    At six o'clock he rose from his bed, made his prayers and his ablutions. At quarter-past six he took tea and toast with his wife, Elanor, in their front parlour. And at half-past six, to the beat of the bell of the grandfather clock, he buttoned up his coat, pulled his hat down upon his head, kissed his wife and lifted the latch of his front door.
+
+    The steady pace of his footsteps marked out the half-hour walk across Oxford. It was a cold February night. The sky was clear and pinpricked with stars. The moon was nothing but a splinter, the curl of a stray feather stuck to the velvet dark of the sky. William pulled up his collar and watched the mists of his breath rope through the air before him.
+
+    He always loved the turning from the lanes of Jericho out on to St Giles. It was an invisible boundary between the quiet domestic world where he was a loving husband and the University where he was a watchman at the college gates. Every time he trod this path he would reflect how the change in the streets echoed the differences between his worlds. The roads of Jericho twisted in upon themselves, and a man could get easily lost. It was sometimes thus when he was sitting by the fireside with his wife. The conversation would ebb and flow between them, full of affection, and talk of the daughter that was blossoming in her belly. But there were times when there were shadowed corners in their speech, when a thing might not mean to Eleanor what it meant to him, and he would feel that he had taken a wrong turning down a dark alley, and was sitting in a room that seemed in outwards appearance to be his home, but was not.
+
+    Whereas when he emerged on to the University streets, there stood the broad walls of the colleges, set shoulder to shoulder, their domes, spires and battlements pointing magnificently towards the heavens. And here William knew exactly who he was: he was Porter Jones, warden of the nights, the man who watched over great minds as they slumbered. Here William had a place and a function, and no one could shift him from it.
+
+    But on this particular evening, the University was retreating from him as he walked through it. It was often thus when the moon waned. The college walls were swallowed by the night, the lamps that hung over the entrances illuminated them in piecemeal: the mouth of a doorway, say, or the curve of a window. As the scholars slept, it was as if the University simply dissolved itself, brick by brick, stone by stone, and drifted off into the night, leaving only a cornice here, a buttress there, and a few curious gargoyles peering down at the shattered world below.
+    """;
 }

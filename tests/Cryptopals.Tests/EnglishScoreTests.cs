@@ -1,7 +1,16 @@
+using Xunit.Abstractions;
+
 namespace Cryptopals.Tests;
 
 public class EnglishScoreTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public EnglishScoreTests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
+
     // These tests pin the CONTRACT, not the exact numbers — you don't yet know what
     // your scoring formula will output, but you DO know the ordering it must produce.
     // Write them as comparisons between two candidates, so they survive you tweaking
@@ -17,18 +26,25 @@ public class EnglishScoreTests
         double englishScore = EnglishScore.Score(english);
         double garbageScore = EnglishScore.Score(garbage);
 
-        Assert.Fail("TODO: assert english scores BETTER than garbage (direction = your design)");
+        englishScore.Should().BeGreaterThan(garbageScore);
     }
 
     [Fact]
     public void RealEnglish_ScoresBetterThanGibberishLetters()
     {
-        // The sharper test: both are printable ASCII. Only letter FREQUENCY tells them apart.
-        // A naive "count printable chars" scorer will TIE here — which is fine for now, but
-        // this test documents the case that pushes you toward frequency weighting later.
         byte[] english = "the quick brown fox"u8.ToArray();
         byte[] gibberish = "zxqj wkvb mfpx qzwk"u8.ToArray();
 
-        Assert.Fail("TODO (may stay red until you add frequency weighting — that's an honest IOU)");
+        double englishScore = EnglishScore.Score(english);
+        double gibberishScore = EnglishScore.Score(gibberish);
+
+        englishScore.Should().BeGreaterThan(gibberishScore);
+    }
+
+    [Fact]
+    public void DumpCorpusFrequencies()
+    {
+        foreach (var kvp in EnglishScore.Frequencies.OrderByDescending(k => k.Value))
+            _output.WriteLine($"{kvp.Key}: {kvp.Value:F2}%");
     }
 }
