@@ -27,3 +27,4 @@ dotnet test --logger "console;verbosity=detailed"       # see the bit-level trac
 - [x] Set 1 · Challenge 1 — hex → base64 (hand-rolled)
 - [x] Set 1 · Challenge 2 — fixed XOR
 - [x] Set 1 · Challenge 3 — single-byte XOR cipher (frequency scoring)
+- [x] Set 1 · Challenge 4 — detect single-character XOR

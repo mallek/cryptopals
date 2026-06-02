@@ -27,6 +27,9 @@
   <ItemGroup>
     <!-- xunit reads this from the output directory; without the copy it's ignored. -->
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Challenge data files: copied next to the test assembly so tests find them
+         via AppContext.BaseDirectory regardless of the runner's working directory. -->
+    <None Include="Data\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

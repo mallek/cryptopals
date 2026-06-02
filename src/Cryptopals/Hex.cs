@@ -29,9 +29,9 @@ public static class Hex
     /// Encode raw bytes as a lowercase hex string. { 0x49, 0x27, 0x6D } → "49276d"
     /// </summary>
     public static string Encode(byte[] bytes, Action<string>? trace = null)
-    {        
+    {
         List<char> charList = new List<char>();
-        
+
         foreach (byte b in bytes)
         {
             // Split byte into high and low nibbles
@@ -48,7 +48,7 @@ public static class Hex
             // Mirror of Decode's trace, arrows reversed: hex pair ← nibbles ← byte value, ascii
             trace.Detail($"{highChar}{lowChar} ← {highNibble.ToBinary(4)} {lowNibble.ToBinary(4)} ← {b,3}  '{b.ToAscii()}'");
         }
-        
+
         return new string(charList.ToArray());
     }
 
@@ -56,7 +56,7 @@ public static class Hex
     {
         if (nibble >= 0 && nibble <= 9) return (char)('0' + nibble);
         if (nibble >= 10 && nibble <= 15) return (char)('a' + (nibble - 10));
-        throw new ArgumentException("Invalid nibble value");    
+        throw new ArgumentException("Invalid nibble value");
     }
 
     static byte HexPairToByte(string segment, Action<string>? trace)
@@ -83,6 +83,22 @@ public static class Hex
         if (c >= 'A' && c <= 'F') return c - 'A' + 10;
         if (c >= 'a' && c <= 'f') return c - 'a' + 10;
         throw new ArgumentException("Invalid hex character");
-    }   
+    }
 
+    internal static bool IsValid(string hex)
+    {
+        if (hex.Length % 2 != 0) return false; // Must have an even number of characters
+
+        foreach (char c in hex)
+        {
+            if (!((c >= '0' && c <= '9') ||
+                  (c >= 'A' && c <= 'F') ||
+                  (c >= 'a' && c <= 'f')))
+            {
+                return false; // Invalid character found
+            }
+        }
+
+        return true; // All characters are valid
+    }
 }
