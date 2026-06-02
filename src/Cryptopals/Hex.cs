@@ -46,7 +46,7 @@ public static class Hex
             charList.Add(lowChar);
 
             // Mirror of Decode's trace, arrows reversed: hex pair ← nibbles ← byte value, ascii
-            trace?.Invoke($"  {highChar}{lowChar} ← {highNibble.ToBinary(4)} {lowNibble.ToBinary(4)} ← {b,3}  '{b.ToAscii()}'");
+            trace.Detail($"{highChar}{lowChar} ← {highNibble.ToBinary(4)} {lowNibble.ToBinary(4)} ← {b,3}  '{b.ToAscii()}'");
         }
         
         return new string(charList.ToArray());
@@ -72,7 +72,7 @@ public static class Hex
         int finalDecimal = shiftedHigh + lowVal;
 
         // One line per pair: hex → high/low nibbles → byte value → character
-        trace?.Invoke($"  {segment} → {highVal.ToBinary(4)} {lowVal.ToBinary(4)} → {finalDecimal,3}  '{((byte)finalDecimal).ToAscii()}'");
+        trace.Detail($"{segment} → {highVal.ToBinary(4)} {lowVal.ToBinary(4)} → {finalDecimal,3}  '{((byte)finalDecimal).ToAscii()}'");
 
         return (byte)finalDecimal;
     }

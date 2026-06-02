@@ -12,18 +12,15 @@ public static class Challenge01
     /// </summary>
     public static string HexToBase64(string hex, Action<string>? trace = null)
     {
-        trace?.Invoke($"hex input ({hex.Length} chars): {hex}");
-        trace?.Invoke("");
-        trace?.Invoke("─── Hex → Bytes ───");
+        trace.Line($"hex input ({hex.Length} chars): {hex}");
 
+        trace.Section("Hex → Bytes");
         byte[] bytes = Hex.Decode(hex, trace);
-        trace?.Invoke($"decoded ({bytes.Length} bytes): \"{bytes.ToAscii()}\"");
-        trace?.Invoke("");
+        trace.Line($"decoded ({bytes.Length} bytes): \"{bytes.ToAscii()}\"");
 
-        trace?.Invoke("─── Bytes → Base64 ───");
-
+        trace.Section("Bytes → Base64");
         string base64 = Base64.Encode(bytes, trace);
-        trace?.Invoke($"result: {base64}");
+        trace.Line($"result: {base64}");
         return base64;
     }
 }

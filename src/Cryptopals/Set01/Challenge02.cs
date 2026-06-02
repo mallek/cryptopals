@@ -10,14 +10,21 @@ public static class Challenge02
     /// XOR two equal-length hex strings against each other, returning the result as hex.
     /// </summary>
     public static string FixedXor(string hexA, string hexB, Action<string>? trace = null)
-    {        
+    {
+        trace.Section("Decode A");
         byte[] bytesA = Hex.Decode(hexA, trace);
+
+        trace.Section("Decode B");
         byte[] bytesB = Hex.Decode(hexB, trace);
+
+        trace.Section("A XOR B");
         byte[] xored = Xor.Apply(bytesA, bytesB, trace);
 
-        trace?.Invoke(bytesA.ToAscii());
-        trace?.Invoke(bytesB.ToAscii());
-        trace?.Invoke(xored.ToAscii());
+        // The story: three buffers as text, stacked so the result reads against its inputs.
+        trace.Section("Result");
+        trace.Line($"a:   \"{bytesA.ToAscii()}\"");
+        trace.Line($"b:   \"{bytesB.ToAscii()}\"");
+        trace.Line($"xor: \"{xored.ToAscii()}\"");
 
         return Hex.Encode(xored, trace);
     }

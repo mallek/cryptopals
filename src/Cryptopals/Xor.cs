@@ -12,16 +12,16 @@ public static class Xor
     public static byte[] Apply(byte[] a, byte[] b, Action<string>? trace = null)
     {
         if (a.Length != b.Length) throw new ArgumentException("Buffers must be of equal length");
-        
+
         List<byte> result = new List<byte>();
-        
+
         for (int i = 0; i < a.Length; i++)
         {
             byte x = (byte)(a[i] ^ b[i]);
             result.Add(x);
-            trace?.Invoke($"a[{i}] {a[i]:X2} XOR b[{i}] {b[i]:X2} = {x:X2}");
+            trace.Detail($"{a[i]:X2} ^ {b[i]:X2} = {x:X2}  '{x.ToAscii()}'");
         }
-        
+
         return result.ToArray();
     }
 
@@ -31,9 +31,7 @@ public static class Xor
     /// </summary>
     public static byte[] SingleByte(byte[] data, byte key, Action<string>? trace = null)
     {
-        // TODO: data[i] ^ key for every byte. Pure — data comes out unchanged.
-        // Hint: this is just Apply against a buffer that is `key` repeated data.Length times...
-        // but you can also write it directly. Your call which reads cleaner.
-        throw new NotImplementedException();
+        byte[] keyBuffer = Enumerable.Repeat(key, data.Length).ToArray();
+        return Apply(data, keyBuffer, trace);
     }
 }

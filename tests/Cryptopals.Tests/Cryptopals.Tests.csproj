@@ -24,4 +24,9 @@
     <ProjectReference Include="..\..\src\Cryptopals\Cryptopals.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- xunit reads this from the output directory; without the copy it's ignored. -->
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
