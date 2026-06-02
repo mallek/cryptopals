@@ -51,4 +51,46 @@ public class XorTests
         a.Should().Equal(0b1100);
         b.Should().Equal(0b1010);
     }
+
+    // ───────────────────────────── RepeatingKey ─────────────────────────────
+
+    [Fact]
+    public void RepeatingKey_CyclesTheKeyAcrossTheData()
+    {
+        // 5 bytes of data, 2-byte key → key applies as k0 k1 k0 k1 k0.
+        // Pick simple values and work the expected result out by hand.
+        byte[] data = { 0x10, 0x20, 0x30, 0x40, 0x50 };
+        byte[] key = { 0x01, 0x02 };
+        // 0x10^0x01, 0x20^0x02, 0x30^0x01, 0x40^0x02, 0x50^0x01
+        Xor.RepeatingKey(data, key).Should().Equal(0x11, 0x22, 0x31, 0x42, 0x51);
+    }
+
+    [Fact]
+    public void RepeatingKey_WithOneByteKey_MatchesSingleByte()
+    {
+        // The generalization claim: SingleByte is RepeatingKey with a 1-byte key.
+        byte[] data = { 0x48, 0x65, 0x6C, 0x6C, 0x6F };
+        Xor.RepeatingKey(data, new byte[] { 0x42 })
+           .Should().Equal(Xor.SingleByte(data, 0x42));
+    }
+
+    [Fact]
+    public void RepeatingKey_TwiceWithSameKey_RecoversOriginal()
+    {
+        // Symmetric, like all XOR: encrypt then encrypt again = back to plaintext.
+        byte[] data = "Attack at dawn"u8.ToArray();
+        byte[] key = "KEY"u8.ToArray();
+        byte[] roundTrip = Xor.RepeatingKey(Xor.RepeatingKey(data, key), key);
+        roundTrip.Should().Equal(data);
+    }
+
+    [Fact]
+    public void RepeatingKey_DoesNotModifyInputs()
+    {
+        byte[] data = { 0x10, 0x20, 0x30 };
+        byte[] key = { 0x01, 0x02 };
+        Xor.RepeatingKey(data, key);
+        data.Should().Equal(0x10, 0x20, 0x30);
+        key.Should().Equal(0x01, 0x02);
+    }
 }
