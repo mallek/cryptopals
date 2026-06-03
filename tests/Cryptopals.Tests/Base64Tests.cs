@@ -1,7 +1,17 @@
+using Xunit.Abstractions;
+
 namespace Cryptopals.Tests;
 
 public class Base64Tests
 {
+
+    private readonly ITestOutputHelper _output;
+
+    public Base64Tests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
+
     // "Man" → "TWFu" is the canonical example (it's the one on the Wikipedia base64 page).
     // The other two rows are THE point of this file: they exercise the '=' padding path,
     // which until now has never been executed by any test in this project.
@@ -11,7 +21,7 @@ public class Base64Tests
     [InlineData(new byte[] { 0x4D }, "TQ==")]                // "M"   — 1 byte,  2 pad chars
     public void Encode_ConvertsBytesToBase64Text(byte[] bytes, string expected)
     {
-        string actual = Base64.Encode(bytes);
+        string actual = Base64.Encode(bytes, _output.WriteLine);
         actual.Should().Be(expected);
     }
 
@@ -20,6 +30,32 @@ public class Base64Tests
     {
         string actual = Base64.Encode(new byte[0]);
         actual.Should().Be("");
+    }
+
+    // ───────────────────────────── Decode: base64 text → bytes ─────────────────────────────
+
+    [Theory]
+    [InlineData("TWFu", new byte[] { 0x4D, 0x61, 0x6E })]   // "Man" — no padding
+    [InlineData("TWE=", new byte[] { 0x4D, 0x61 })]          // "Ma"  — 1 pad → drop 1 byte
+    [InlineData("TQ==", new byte[] { 0x4D })]                // "M"   — 2 pad → drop 2 bytes
+    public void Decode_ConvertsBase64TextToBytes(string base64, byte[] expected)
+    {
+        Base64.Decode(base64).Should().Equal(expected);
+    }
+
+    [Fact]
+    public void Decode_StripsNonBase64Characters()
+    {
+        // A wrapped file has newlines between lines — Decode must ignore them.
+        Base64.Decode("TW\nFu").Should().Equal(0x4D, 0x61, 0x6E);
+    }
+
+    [Fact]
+    public void DecodeThenEncode_RoundTrips()
+    {
+        // Round-trip catches paired bugs the one-way tests miss.
+        byte[] original = "Any carnal pleasure."u8.ToArray();
+        Base64.Decode(Base64.Encode(original)).Should().Equal(original);
     }
 
     [Fact]

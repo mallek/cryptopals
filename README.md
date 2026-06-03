@@ -29,3 +29,4 @@ dotnet test --logger "console;verbosity=detailed"       # see the bit-level trac
 - [x] Set 1 · Challenge 3 — single-byte XOR cipher (frequency scoring)
 - [x] Set 1 · Challenge 4 — detect single-character XOR
 - [x] Set 1 · Challenge 5 — implement repeating-key XOR
+- [x] Set 1 · Challenge 6 — break repeating-key XOR

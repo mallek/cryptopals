@@ -61,6 +61,56 @@ public static class Base64
         return new string(resultChars.ToArray());
     }
 
+    /// <summary>
+    /// Decode base64 text back to raw bytes. "TWFu" → { 0x4D, 0x61, 0x6E }
+    /// The mirror of Encode: char → 6-bit value, repack four 6-bit values into three bytes.
+    /// </summary>
+    public static byte[] Decode(string base64, Action<string>? trace = null)
+    {
+        var base64string = new string(base64.Where(IsBase64Char).ToArray());
+
+        //make byte arrat the correct length: each 4 chars represent 3 bytes, but we need to account for padding chars which don't produce bytes
+        int paddingCount = 0;
+        for (int i = base64string.Length - 1; i >= 0 && base64string[i] == '='; i--)
+        {
+            paddingCount++;
+        }
+        byte[] decodedBytes = new byte[(base64string.Length * 6) / 8 - paddingCount]; // Each base64 char represents 6 bits, so total bits is length * 6, and we want bytes (8 bits)
+
+        for(int i = 0; i < base64string.Length; i += 4)
+        {
+            int Value(char ch) => ch == '=' ? 0 : Base64CharToInt(ch);
+            trace.Line($"chars    {base64string[i],6} | {base64string[i + 1],6} | {base64string[i + 2],6} | {base64string[i + 3],6}");
+            int c1 = Value(base64string[i]);
+            int c2 = Value(base64string[i + 1]);
+            int c3 = Value(base64string[i + 2]);
+            int c4 = Value(base64string[i + 3]);
+            trace.Detail($"values   {c1,6} | {c2,6} | {c3,6} | {c4,6}");
+            int block24Bits = (c1 << 18) + (c2 << 12) + (c3 << 6) + c4;
+            trace.Detail($"packed   {block24Bits.ToBinary(24)}   ({block24Bits:N0})");
+            byte b1 = (byte)((block24Bits >> 16) & 0xFF);
+            byte b2 = (byte)((block24Bits >> 8) & 0xFF);
+            byte b3 = (byte)(block24Bits & 0xFF);
+            trace.Detail($"bytes    {b1.ToBinary()} {b2.ToBinary()} {b3.ToBinary()}   0x{b1:X2} 0x{b2:X2} 0x{b3:X2}");
+            trace.Line($"block {i / 4}");
+            decodedBytes[(i / 4) * 3] = b1;
+            if (base64string[i + 2] != '=') decodedBytes[(i / 4) * 3 + 1] = b2; // If not padding, write second byte
+            if (base64string[i + 3] != '=') decodedBytes[(i / 4) * 3 + 2] = b3; // If not padding, write third byte
+        }
+
+        return decodedBytes;
+
+    }
+
+    private static bool IsBase64Char(char arg)
+    {
+        return (arg >= 'A' && arg <= 'Z') ||
+               (arg >= 'a' && arg <= 'z') ||
+               (arg >= '0' && arg <= '9') ||
+               arg == '+' || arg == '/' || arg == '=';
+    }
+
+
     static char IntToBase64Char(int val)
     {
         if (val >= 0 && val <= 25) return (char)('A' + val);
@@ -69,5 +119,16 @@ public static class Base64
         if (val == 62) return '+';
         if (val == 63) return '/';
         throw new ArgumentException("Invalid base64 value");
+    }
+
+    // Reverse of IntToBase64Char: a base64 character back to its 6-bit value (0–63).
+    static int Base64CharToInt(char c)
+    {
+        if (c >= 'A' && c <= 'Z') return c - 'A';
+        if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+        if (c >= '0' && c <= '9') return c - '0' + 52;
+        if (c == '+') return 62;
+        if (c == '/') return 63;
+        throw new ArgumentException($"Invalid base64 character: '{c}'");
     }
 }

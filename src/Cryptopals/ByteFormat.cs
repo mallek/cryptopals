@@ -24,4 +24,5 @@ public static class ByteFormat
     {
         return str.Select(c => (byte)c).ToArray();
     }
+
 }
