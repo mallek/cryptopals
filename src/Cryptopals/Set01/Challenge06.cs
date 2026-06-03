@@ -15,20 +15,30 @@ public static class Challenge06
                                           Action<string>? trace = null)
     {
         // Phase 1 — find the key length.
+        trace.Section("Phase 1 — guess key length");
         int keyLength = GuessKeyLength(ciphertext, minKeyLen, maxKeyLen, trace);
 
-        // Phase 2 — recover one key byte per transposed bucket.
-        byte[][] buckets = Transpose(ciphertext, keyLength, trace);
+        // Phase 2 — recover one key byte per transposed bucket, watching the key assemble.
+        trace.Section($"Phase 2 — recover {keyLength}-byte key, one byte per bucket");
+        byte[][] buckets = Transpose(ciphertext, keyLength, null);   // quiet: bucket contents aren't the story
         byte[] key = new byte[keyLength];
 
         for (int b = 0; b < buckets.Length; b++)
         {
-            key[b] = Challenge03.Crack(buckets[b], null).Key;
-            trace.Line($"recovered key byte {b}: 0x{key[b]:X2} ('{key[b].ToAscii()}')");
-        }
+            // Each bucket is a single-byte-XOR ciphertext — Crack it the same way as Challenge 3.
+            CrackResult bucketCrack = Challenge03.Crack(buckets[b], null);
+            key[b] = bucketCrack.Key;
 
-        // Phase 3 — decrypt the whole thing with the recovered key.
-        byte[] plaintext = Xor.RepeatingKey(ciphertext, key, trace);
+            // Show the key spelling itself out: this bucket's byte, plus the key recovered so far.
+            string keySoFar = key.Take(b + 1).ToArray().ToAscii();
+            trace.Detail($"bucket {b,2} → 0x{key[b]:X2} '{key[b].ToAscii()}'  (score {bucketCrack.Score,7:F2})   key so far: \"{keySoFar}\"");
+        }
+        trace.Line($"recovered key ({keyLength} bytes): \"{key.ToAscii()}\"");
+
+        // Phase 3 — decrypt with the recovered key (quiet: don't dump every byte of a big file).
+        trace.Section("Phase 3 — decrypt with recovered key");
+        byte[] plaintext = Xor.RepeatingKey(ciphertext, key, null);
+        trace.Detail($"first 64 chars: \"{plaintext.Take(64).ToArray().ToAscii()}\"");
         return new Challenge06Result(key, plaintext);
     }
 
