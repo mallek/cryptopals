@@ -15,17 +15,39 @@ namespace Cryptopals;
 public static class EnglishScore
 {
 
+    /// <summary>Frequency table measured from <see cref="CorpusText"/> (your corpus).</summary>
     public static readonly Dictionary<char, double> Frequencies;
+
+    /// <summary>
+    /// A general English table — standard letter frequencies (ETAOIN SHRDLU…), NOT derived
+    /// from any single corpus, plus space weighted as the most common character. Use this to
+    /// compare a hand-tuned general model against your corpus-measured one.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<char, double> StandardFrequencies = new Dictionary<char, double>
+    {
+        [' '] = 18.0,                                                   // most common character of all
+        ['E'] = 12.7, ['T'] = 9.1, ['A'] = 8.2, ['O'] = 7.5, ['I'] = 7.0, ['N'] = 6.7,
+        ['S'] = 6.3, ['H'] = 6.1, ['R'] = 6.0, ['D'] = 4.3, ['L'] = 4.0, ['C'] = 2.8,
+        ['U'] = 2.8, ['M'] = 2.4, ['W'] = 2.4, ['F'] = 2.2, ['G'] = 2.0, ['Y'] = 2.0,
+        ['P'] = 1.9, ['B'] = 1.5, ['V'] = 1.0, ['K'] = 0.8, ['J'] = 0.15, ['X'] = 0.15,
+        ['Q'] = 0.10, ['Z'] = 0.07,
+    };
 
     static EnglishScore()
     {
         Frequencies = CorpusAnalysis(CorpusText);
     }
 
-    /// <summary>
-    /// Return a number representing how English-like the bytes are.
-    /// </summary>
+    /// <summary>Score using the default corpus-derived table.</summary>
     public static double Score(byte[] bytes, Action<string>? trace = null)
+        => Score(bytes, Frequencies, trace);
+
+    /// <summary>
+    /// Score using a SPECIFIC frequency table. Swapping tables tailors the scorer to the
+    /// expected plaintext domain — formal prose, slang, a different language — which is the
+    /// whole point of letting the corpus be a parameter.
+    /// </summary>
+    public static double Score(byte[] bytes, IReadOnlyDictionary<char, double> frequencies, Action<string>? trace = null)
     {
         // Per-character breakdown. Fires only when traced — which (because Crack
         // withholds the sink during its 256-key search) means only for the winner.
@@ -44,10 +66,9 @@ public static class EnglishScore
             }
             else if (char.IsLetter((char)b) || b == ' ')
             {
-                // Letters and space, weighted by their frequency in English text.
-                // Space carries the most weight — it is the most common character in English.
+                // Letters and space, weighted by their frequency in the chosen table.
                 char upper = char.ToUpper((char)b);
-                charScore = Frequencies.GetValueOrDefault(upper, 0);
+                charScore = frequencies.GetValueOrDefault(upper, 0);
                 cls = b == ' ' ? "space" : "letter";
             }
             else
@@ -63,6 +84,10 @@ public static class EnglishScore
         trace.Detail($"{"TOTAL",-26}{score,10:F2}");
         return score;
     }
+
+    // Single-argument handles so a scorer can be passed as Func&lt;byte[], double&gt; into Crack.
+    public static double ScoreCorpus(byte[] bytes) => Score(bytes, Frequencies);
+    public static double ScoreStandard(byte[] bytes) => Score(bytes, StandardFrequencies);
 
     public static Dictionary<char, double> CorpusAnalysis(string text, Action<string>? trace = null)
     {

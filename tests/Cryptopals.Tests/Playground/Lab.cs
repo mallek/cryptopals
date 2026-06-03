@@ -49,27 +49,39 @@ public static class Lab
     /// isolates the FUNDAMENTAL seam — per-bucket cracking — from the separate problem of
     /// detecting the key length. Use this to find where bytes-per-bucket gets too thin.
     /// </summary>
-    public static BreakReport CrackKnownLength(string plaintext, byte[] key)
+    public static BreakReport CrackKnownLength(string plaintext, byte[] key, Func<byte[], double>? scorer = null)
     {
         byte[] plainBytes = plaintext.ToBytes();
         byte[] ciphertext = Xor.RepeatingKey(plainBytes, key);
         double bytesPerBucket = (double)ciphertext.Length / key.Length;
 
-        // Transpose with the KNOWN length, crack each single-byte bucket, reassemble.
+        // Transpose with the KNOWN length, crack each single-byte bucket with the chosen
+        // scorer, reassemble. Swapping the scorer is how you measure scorer quality here.
         byte[][] buckets = Challenge06.Transpose(ciphertext, key.Length, null);
         byte[] recovered = new byte[key.Length];
         for (int b = 0; b < buckets.Length; b++)
-            recovered[b] = Challenge03.Crack(buckets[b], null).Key;
+            recovered[b] = Challenge03.Crack(buckets[b], null, scorer).Key;
 
         byte[] recoveredText = Xor.RepeatingKey(ciphertext, recovered);
         bool success = recoveredText.SequenceEqual(plainBytes);
 
         return new BreakReport(plainBytes.Length, key.ToAscii(), key.Length, key.Length,
-                               recovered.ToAscii(), recoveredText.ToAscii(), bytesPerBucket, success);
+                               recovered.ToAscii(), recoveredText.ToAscii(), bytesPerBucket,
+                               success, KeyAccuracy(recovered, key));
+    }
+
+    // Fraction of key bytes recovered correctly — the right metric at the margin, where a
+    // scorer might nail 90% even when it can't get a clean 100%.
+    static double KeyAccuracy(byte[] recovered, byte[] actual)
+    {
+        if (actual.Length == 0) return 0;
+        int n = Math.Min(recovered.Length, actual.Length), correct = 0;
+        for (int i = 0; i < n; i++) if (recovered[i] == actual[i]) correct++;
+        return (double)correct / actual.Length;
     }
 }
 
 public record BreakReport(
     int TextLength, string ActualKey, int ActualKeyLength,
     int GuessedKeyLength, string RecoveredKey, string RecoveredText,
-    double BytesPerBucket, bool Success);
+    double BytesPerBucket, bool Success, double KeyAccuracy = 0);

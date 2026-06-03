@@ -19,8 +19,12 @@ public static class Challenge03
     /// the key and score are useful for tests and for the trace. If you'd rather
     /// return something else, that's your call — change the shape to fit.
     /// </remarks>
-    public static CrackResult Crack(byte[] ciphertext, Action<string>? trace = null)
+    public static CrackResult Crack(byte[] ciphertext, Action<string>? trace = null, Func<byte[], double>? scorer = null)
     {
+        // Pluggable scorer — defaults to the corpus-based English score. Swap it to score
+        // against a different language model (a domain-tuned corpus, a sharper bigram scorer).
+        var score01 = scorer ?? EnglishScore.ScoreCorpus;
+
         double bestScore = double.NegativeInfinity;
         byte bestKey = 0;
         byte[] bestPlaintext = Array.Empty<byte>();
@@ -32,7 +36,7 @@ public static class Challenge03
         {
             byte keyedByte = (byte)key;
             byte[] decrypted = Xor.SingleByte(ciphertext, keyedByte, null);
-            double score = EnglishScore.Score(decrypted, null);
+            double score = score01(decrypted);
             trace.Line($"Key 0x{key:X2} ('{keyedByte.ToAscii()}') → score {score,8:F2}");
             if (score > bestScore)
             {
