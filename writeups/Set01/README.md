@@ -12,11 +12,12 @@ reveal.
 |---|-----------|---------|----------|
 | 1 | Convert hex to base64 | [Challenge 1](Challenge01.md) | Regrouping bits 8→6: three bytes become four base64 symbols. |
 | 2 | Fixed XOR | [Challenge 2](Challenge02.md) | XOR two buffers byte by byte, the operation every cipher here is built on. |
-| 3 | Single-byte XOR cipher | [Challenge 3](Challenge03.md) | Try all 256 keys, let English letter frequency pick the winner. |
+| 3 | Single-byte XOR cipher | [Challenge 3](Challenge03.md) | Try all 256 keys; our home-grown, swappable corpus scores each one to pick the winner. |
 | 4 | Detect single-character XOR | [Challenge 4](Challenge04.md) | Run the Challenge 3 scorer over 300 lines; the cipher-text outs itself. |
 | 5 | Implement repeating-key XOR | [Challenge 5](Challenge05.md) | Cycle a multi-byte key across the message. |
-| 6 | Break repeating-key XOR | [Challenge 6](Challenge06.md) | Hamming distance finds the key length; then it's 1-byte XOR per column. |
-| 7 | AES-128 in ECB mode | [Challenge 7](Challenge07.md) | The hand-rolled AES: GF(2⁸), the S-box, the round function. |
+| 6 | Break repeating-key XOR | [Challenge 6](Challenge06.md) | Hamming distance finds the key length, then it's 1-byte XOR per column. Plus the `Playground` seam: where the break dies. |
+| ★ | Building AES-128 from scratch | [Breakout](Aes128-from-scratch.md) | A side-quest before Challenge 7: GF(2⁸), the S-box, the four round transforms, and the avalanche viz where one flipped bit floods the block. |
+| 7 | AES-128 in ECB mode | [Challenge 7](Challenge07.md) | Wrap the hand-rolled cipher in ECB mode to decrypt a file. |
 | 8 | Detect AES-128-ECB | [Challenge 8](Challenge08.md) | ECB is deterministic, so repeated plaintext blocks leak as repeated ciphertext. |
 
 > Trace blocks below are captured from the actual tests with
