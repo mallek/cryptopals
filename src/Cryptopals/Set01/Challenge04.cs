@@ -1,3 +1,4 @@
+using Cryptopals.Ciphers;
 using Cryptopals.Codecs;
 
 namespace Cryptopals.Set01;

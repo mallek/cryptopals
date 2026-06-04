@@ -1,4 +1,5 @@
 using Cryptopals;
+using Cryptopals.Ciphers;
 using Cryptopals.Codecs;
 using Cryptopals.Set01;
 using Xunit.Abstractions;

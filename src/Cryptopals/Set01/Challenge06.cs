@@ -1,3 +1,5 @@
+using Cryptopals.Ciphers;
+
 namespace Cryptopals.Set01;
 
 /// <summary>
