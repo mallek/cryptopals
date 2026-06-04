@@ -1,5 +1,7 @@
-using Cryptopals;
+using Cryptopals.Codecs;
+using Cryptopals.Scoring;
 using Cryptopals.Set01;
+using Cryptopals.Visualization;
 using Xunit.Abstractions;
 
 namespace Cryptopals.Tests.Set01;

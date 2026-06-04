@@ -1,4 +1,6 @@
-namespace Cryptopals;
+using Cryptopals.Visualization;
+
+namespace Cryptopals.Ciphers;
 
 /// <summary>
 /// XOR combination of byte buffers — the fundamental operation every cipher

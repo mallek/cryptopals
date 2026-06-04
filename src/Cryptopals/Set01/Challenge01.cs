@@ -1,3 +1,6 @@
+using Cryptopals.Codecs;
+using Cryptopals.Visualization;
+
 namespace Cryptopals.Set01;
 
 /// <summary>

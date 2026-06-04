@@ -1,4 +1,4 @@
-namespace Cryptopals;
+namespace Cryptopals.Visualization;
 
 /// <summary>
 /// One visual grammar for all trace output. These are extension methods on

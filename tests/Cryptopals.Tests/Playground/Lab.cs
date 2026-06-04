@@ -1,5 +1,6 @@
-using Cryptopals;
+using Cryptopals.Ciphers;
 using Cryptopals.Set01;
+using Cryptopals.Visualization;
 
 namespace Cryptopals.Tests.Playground;
 

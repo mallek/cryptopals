@@ -1,4 +1,6 @@
-namespace Cryptopals;
+using Cryptopals.Visualization;
+
+namespace Cryptopals.Codecs;
 
 /// <summary>
 /// Hex codec: text representation ↔ raw bytes.

@@ -1,4 +1,6 @@
-namespace Cryptopals.Tests;
+using Cryptopals.Ciphers;
+
+namespace Cryptopals.Tests.Ciphers;
 
 public class XorTests
 {

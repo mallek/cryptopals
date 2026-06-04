@@ -1,6 +1,7 @@
+using Cryptopals.Codecs;
 using Xunit.Abstractions;
 
-namespace Cryptopals.Tests;
+namespace Cryptopals.Tests.Codecs;
 
 public class Base64Tests
 {

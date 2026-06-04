@@ -1,6 +1,7 @@
+using Cryptopals.Scoring;
 using Xunit.Abstractions;
 
-namespace Cryptopals.Tests;
+namespace Cryptopals.Tests.Scoring;
 
 public class EnglishScoreTests
 {
