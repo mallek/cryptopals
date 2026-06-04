@@ -1,4 +1,3 @@
-using Cryptopals;
 using Cryptopals.Aes;
 using Cryptopals.Scoring;
 using Xunit.Abstractions;

@@ -46,7 +46,7 @@ Next: Set 2 (block crypto) — Challenge 9 (PKCS#7 padding) → 10 (CBC) → 11 
 ## Architecture
 
 - **.NET 10, xunit + AwesomeAssertions, central package management** (`Directory.Packages.props` pins versions; csproj files reference packages without versions). Solution file is `Cryptopals.slnx`.
-- **`src/Cryptopals/`** — library primitives: codecs (`Hex`, `Base64`), ciphers (`Xor`), scoring (`EnglishScore` + swappable corpus), `Hamming`, visualization (`BitFormat`, `ByteFormat`, `TraceExtensions`). **`Aes/`** holds the hand-rolled AES (`GaloisField`, `AesSBox`, `AesState`, `AesKeySchedule`, `Aes128`, `AesEcb`). Challenges live in set folders (`Set01/`, …) as thin compositions.
+- **`src/Cryptopals/`** — library primitives organized by responsibility: `Codecs/` (`Hex`, `Base64`), `Ciphers/` (`Xor`), `Scoring/` (`EnglishScore`, `Hamming`), `Visualization/` (`BitFormat`, `ByteFormat`, `TraceExtensions`), and `Aes/` (the hand-rolled AES: `GaloisField`, `AesSBox`, `AesState`, `AesKeySchedule`, `Aes128`, `AesEcb`). Challenges live in set folders (`Set01/`, …) as thin compositions.
 - **`tests/Cryptopals.Tests/`** — mirrors src. Primitives get full suites; each challenge gets a known-answer test. Data files live in `Data/<set>/` (copied to output; loaded via `AppContext.BaseDirectory`). `Playground/` holds experimentation viewers (the seam-sweep / scorer rig).
 - **Challenges with no published answer** (3, 4, 6, 7, 8) use *discovery-then-lock*: run it, read the traced result, then pin it as an assertion.
 

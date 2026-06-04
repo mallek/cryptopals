@@ -9,9 +9,13 @@ Each challenge is solved as a **test**. The challenge gives a known answer, so t
 Reusable pieces get extracted out of challenges into library primitives as soon as a second challenge needs them. The challenges are excuses; the library is the product.
 
 ```
-src/Cryptopals/        # library primitives — codecs (Hex, Base64), ciphers (Xor), formatters
-src/Cryptopals/Set01/  # challenge solvers — thin compositions of primitives
-tests/Cryptopals.Tests # mirrors src: full suites for primitives, one known-answer test per challenge
+src/Cryptopals/Codecs/         # Hex, Base64
+src/Cryptopals/Ciphers/        # Xor
+src/Cryptopals/Scoring/        # EnglishScore, Hamming
+src/Cryptopals/Visualization/  # BitFormat, ByteFormat, TraceExtensions
+src/Cryptopals/Aes/            # hand-rolled AES-128
+src/Cryptopals/Set01/          # challenge solvers — thin compositions of primitives
+tests/Cryptopals.Tests         # mirrors src: full suites for primitives, one known-answer test per challenge
 ```
 
 ## Run
