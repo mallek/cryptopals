@@ -1,4 +1,5 @@
 using Cryptopals;
+using Cryptopals.Scoring;
 using Xunit.Abstractions;
 
 namespace Cryptopals.Tests.Playground;

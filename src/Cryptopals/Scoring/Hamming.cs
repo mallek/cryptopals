@@ -1,4 +1,4 @@
-namespace Cryptopals;
+namespace Cryptopals.Scoring;
 
 /// <summary>
 /// Hamming distance: the number of differing BITS between two equal-length byte buffers.

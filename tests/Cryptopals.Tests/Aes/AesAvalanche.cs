@@ -1,5 +1,6 @@
 using Cryptopals;
 using Cryptopals.Aes;
+using Cryptopals.Scoring;
 using Xunit.Abstractions;
 
 namespace Cryptopals.Tests.Aes;

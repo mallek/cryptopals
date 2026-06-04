@@ -1,4 +1,4 @@
-namespace Cryptopals;
+namespace Cryptopals.Scoring;
 
 /// <summary>
 /// Scores how much a byte buffer "looks like English text".
