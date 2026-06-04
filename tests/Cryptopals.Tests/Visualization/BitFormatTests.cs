@@ -1,6 +1,6 @@
-using Cryptopals;
+using Cryptopals.Visualization;
 
-namespace Cryptopals.Tests;
+namespace Cryptopals.Tests.Visualization;
 
 public class BitFormatTests
 {

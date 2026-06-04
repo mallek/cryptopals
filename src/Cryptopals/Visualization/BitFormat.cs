@@ -1,4 +1,4 @@
-namespace Cryptopals;
+namespace Cryptopals.Visualization;
 
 public static class BitFormat
 {

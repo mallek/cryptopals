@@ -1,3 +1,5 @@
+using Cryptopals.Visualization;
+
 namespace Cryptopals.Codecs;
 
 /// <summary>

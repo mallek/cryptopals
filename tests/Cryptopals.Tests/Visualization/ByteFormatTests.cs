@@ -1,7 +1,7 @@
-using Cryptopals;
 using Cryptopals.Codecs;
+using Cryptopals.Visualization;
 
-namespace Cryptopals.Tests;
+namespace Cryptopals.Tests.Visualization;
 
 public class ByteFormatTests
 {

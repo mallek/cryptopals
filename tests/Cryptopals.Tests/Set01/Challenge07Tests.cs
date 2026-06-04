@@ -1,5 +1,5 @@
-using Cryptopals;
 using Cryptopals.Set01;
+using Cryptopals.Visualization;
 using Xunit.Abstractions;
 
 namespace Cryptopals.Tests.Set01;

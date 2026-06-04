@@ -1,5 +1,6 @@
 using Cryptopals.Ciphers;
 using Cryptopals.Scoring;
+using Cryptopals.Visualization;
 
 namespace Cryptopals.Set01;
 

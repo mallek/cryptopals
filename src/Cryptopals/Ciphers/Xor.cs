@@ -1,3 +1,5 @@
+using Cryptopals.Visualization;
+
 namespace Cryptopals.Ciphers;
 
 /// <summary>
