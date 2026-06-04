@@ -14,6 +14,7 @@ public class Challenge04Tests
     }
 
     [Fact]
+    [Trait("Category", "Slow")]   // brute-forces all 327 lines — real test, but heavy for the inner loop
     public void Detect_FindsTheEncryptedLine()
     {
         // Data-file convention: files live under Data/<set>/ in the test project and are
@@ -38,6 +39,7 @@ public class Challenge04Tests
     // "least-bad of 256 garbage decryptions" for a noise line. Watch the score cliff after #1 —
     // that gap is why automated scoring works: the signal stands clear above the noise floor.
     [Fact]
+    [Trait("Category", "Viewer")]   // no assertions — exploration only
     public void DumpAllLineCandidates()
     {
         string path = Path.Combine(AppContext.BaseDirectory, "Data", "Set01", "04.txt");

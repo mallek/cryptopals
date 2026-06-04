@@ -4,7 +4,9 @@ using Xunit.Abstractions;
 namespace Cryptopals.Tests.Playground;
 
 // These are VIEWERS, not tests — they have no assertions; you read their output.
-// Run with:  dotnet test --filter "Playground" -l "console;verbosity=detailed"
+// Tagged Viewer so the fast suite skips them; run on demand with:
+//   dotnet test --filter "Category=Viewer" -l "console;verbosity=detailed"
+[Trait("Category", "Viewer")]
 public class Playground
 {
     private readonly ITestOutputHelper _output;
