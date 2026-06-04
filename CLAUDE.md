@@ -25,16 +25,30 @@ We are building our own cryptography library from scratch. The whole point is to
 ## Commands
 
 ```bash
-dotnet test                                              # run all challenge tests
-dotnet test --filter "FullyQualifiedName~Challenge01"    # run one challenge
-dotnet build                                             # build everything
+dotnet test --filter "Category!=Viewer&Category!=Slow"   # FAST inner loop (~1s) — use this constantly
+dotnet test --filter "FullyQualifiedName~Aes"            # just what you're building (by name)
+dotnet test                                              # everything (~15s) — before commit/push
+dotnet test --filter "Category=Viewer" -l "console;verbosity=detailed"   # run exploration viewers
 ```
+
+Heavy brute-force/exploration tests are tagged `[Trait("Category", "Slow")]` (real but slow) or
+`[Trait("Category", "Viewer")]` (no assertions — they print, you read). Tag new heavy tests so the
+fast suite stays fast. To see trace output, add `-l "console;verbosity=detailed"`.
+
+## Status
+
+Set 1 complete (challenges 1–8). **AES-128 is fully hand-rolled** in `src/Cryptopals/Aes/` —
+encrypt + decrypt, reduced rounds, ECB mode — verified against FIPS-197 vectors. Reuse it for
+Set 2 (CBC builds on `AesEcb`/`Aes128`; the byte-at-a-time ECB attack uses the repeat leak).
+Next: Set 2 (block crypto) — Challenge 9 (PKCS#7 padding) → 10 (CBC) → 11 (ECB/CBC oracle) → 12
+(byte-at-a-time ECB decryption, the centerpiece).
 
 ## Architecture
 
 - **.NET 10, xunit + AwesomeAssertions, central package management** (`Directory.Packages.props` pins versions; csproj files reference packages without versions). Solution file is `Cryptopals.slnx`.
-- **`src/Cryptopals/`** — the library primitives: codecs (`Hex`, `Base64`), ciphers (`Xor`), visualization (`BitFormat`, `ByteFormat`). Challenges live in set folders (`Set01/`, `Set02/`, …) as thin compositions of primitives — if a challenge method grows past a few lines, something in it wants to become a primitive.
-- **`tests/Cryptopals.Tests/`** — mirrors src. Primitives get full test suites; each challenge gets a test asserting the known cryptopals answer. Green test = challenge complete.
+- **`src/Cryptopals/`** — library primitives: codecs (`Hex`, `Base64`), ciphers (`Xor`), scoring (`EnglishScore` + swappable corpus), `Hamming`, visualization (`BitFormat`, `ByteFormat`, `TraceExtensions`). **`Aes/`** holds the hand-rolled AES (`GaloisField`, `AesSBox`, `AesState`, `AesKeySchedule`, `Aes128`, `AesEcb`). Challenges live in set folders (`Set01/`, …) as thin compositions.
+- **`tests/Cryptopals.Tests/`** — mirrors src. Primitives get full suites; each challenge gets a known-answer test. Data files live in `Data/<set>/` (copied to output; loaded via `AppContext.BaseDirectory`). `Playground/` holds experimentation viewers (the seam-sweep / scorer rig).
+- **Challenges with no published answer** (3, 4, 6, 7, 8) use *discovery-then-lock*: run it, read the traced result, then pin it as an assertion.
 
 ## Conventions
 
