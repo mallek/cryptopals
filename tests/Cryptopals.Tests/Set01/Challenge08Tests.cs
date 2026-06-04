@@ -1,3 +1,5 @@
+using Cryptopals;
+using Cryptopals.Aes;
 using Cryptopals.Set01;
 using Xunit.Abstractions;
 
@@ -27,5 +29,20 @@ public class Challenge08Tests
         // should be 0 — random/CBC ciphertexts never repeat a 16-byte block), then pin it:
           result.LineNumber.Should().Be(132);
           result.RepeatedBlocks.Should().BeGreaterThan(0);
+    }
+
+    // The cheeky hypothesis: maybe cryptopals reused the YELLOW SUBMARINE key. One guess, not 2^128.
+    [Fact]
+    [Trait("Category", "Viewer")]
+    public void TryYellowSubmarineKey()
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Data", "Set01", "08.txt");
+        byte[] ciphertext = Hex.Decode(File.ReadAllLines(path)[132]);
+
+        byte[] guess = AesEcb.Decrypt(ciphertext, "YELLOW SUBMARINE"u8.ToArray());
+
+        _output.WriteLine("line 132 decrypted with YELLOW SUBMARINE:");
+        _output.WriteLine($"  bytes: {Hex.Encode(guess)}");
+        _output.WriteLine($"  ascii: \"{guess.ToAscii()}\"");
     }
 }

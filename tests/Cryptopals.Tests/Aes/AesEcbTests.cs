@@ -1,10 +1,19 @@
 using Cryptopals;
 using Cryptopals.Aes;
+using Xunit.Abstractions;
 
 namespace Cryptopals.Tests.Aes;
 
 public class AesEcbTests
 {
+
+    private readonly ITestOutputHelper _output;
+
+    public AesEcbTests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
+
     [Fact]
     public void EncryptThenDecrypt_RoundTrips()
     {
@@ -22,7 +31,7 @@ public class AesEcbTests
         byte[] plaintext = "YELLOW SUBMARINEYELLOW SUBMARINE"u8.ToArray();   // same 16 bytes, twice
         byte[] key = "1234567890ABCDEF"u8.ToArray();
 
-        byte[] cipher = AesEcb.Encrypt(plaintext, key);
+        byte[] cipher = AesEcb.Encrypt(plaintext, key, trace: _output.WriteLine);
 
         cipher[0..16].Should().Equal(cipher[16..32]);   // same input block → same output block
     }
