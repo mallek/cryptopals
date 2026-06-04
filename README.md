@@ -2,6 +2,13 @@
 
 Working through the [Cryptopals Crypto Challenges](https://cryptopals.com) in C#, to actually *feel* the bytes — no `Convert.ToBase64String` shortcuts where the point is to learn the mechanics.
 
+## Writeups
+
+Narrative walkthroughs with real trace output: the problem, the idea, the code, and the bytes
+moving through it:
+
+- [Set 1: Basics](writeups/Set01/README.md)
+
 ## Layout
 
 Each challenge is solved as a **test**. The challenge gives a known answer, so the test *is* the deliverable — go green, move on.
@@ -36,10 +43,3 @@ dotnet test --logger "console;verbosity=detailed"       # see the bit-level trac
 - [x] Set 1 · Challenge 6 — break repeating-key XOR
 - [x] Set 1 · Challenge 7 — AES-128 in ECB mode (hand-rolled AES, no library)
 - [x] Set 1 · Challenge 8 — detect AES-128-ECB (repeated-block fingerprint)
-
-## Writeups
-
-Narrative walkthroughs with real trace output: the problem, the idea, the code, and the bytes
-moving through it:
-
-- [Set 1: Basics](writeups/Set01/README.md)
