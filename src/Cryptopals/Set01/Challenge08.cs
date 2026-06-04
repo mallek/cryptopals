@@ -23,16 +23,28 @@ public static class Challenge08
         for (int i = 0; i < hexLines.Count; i++)
         {
             string hex = hexLines[i];
-            byte[] bytes = Hex.Decode(hex);
-            IEnumerable<string> blocks = bytes.Chunk(16).Select(b => Hex.Encode(b));
-            int totalBlocks = blocks.Count();
-            int distinctBlocks = blocks.Distinct().Count();
-            int repeatedBlocks = totalBlocks - distinctBlocks;
-            trace?.Invoke($"Line {i}: {repeatedBlocks} repeated blocks");
-            detections[i] = new EcbDetection(LineNumber: i, Hex: hex, RepeatedBlocks: repeatedBlocks);
+            // .ToList() so Count()/Distinct() don't re-run the decode twice on a lazy sequence.
+            var blocks = Hex.Decode(hex).Chunk(16).Select(b => Hex.Encode(b)).ToList();
+            int repeatedBlocks = blocks.Count - blocks.Distinct().Count();
+            if (repeatedBlocks > 0)                         // only the interesting lines (cuts 203 zeros)
+                trace.Line($"line {i}: {repeatedBlocks} repeated block(s)");
+            detections[i] = new EcbDetection(i, hex, repeatedBlocks);
         }
 
-        return detections.OrderByDescending(kvp => kvp.Value.RepeatedBlocks).First().Value;
+        EcbDetection winner = detections.OrderByDescending(kvp => kvp.Value.RepeatedBlocks).First().Value;
+
+        // Show the winning line's blocks, flagging the one(s) that repeat — the ECB fingerprint
+        // made visible: a single 16-byte value appearing several times in a sea of unique blocks.
+        trace.Section($"ECB found: line {winner.LineNumber}");
+        var winnerBlocks = Hex.Decode(winner.Hex).Chunk(16).Select(b => Hex.Encode(b)).ToList();
+        var counts = winnerBlocks.GroupBy(b => b).ToDictionary(g => g.Key, g => g.Count());
+        for (int b = 0; b < winnerBlocks.Count; b++)
+        {
+            int n = counts[winnerBlocks[b]];
+            trace.Detail($"block {b,2}: {winnerBlocks[b]}{(n > 1 ? $"   ← repeats ×{n}" : "")}");
+        }
+
+        return winner;
     }
 }
 
