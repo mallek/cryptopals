@@ -35,4 +35,19 @@ public static class AesSBox
 
     /// <summary>Substitute one byte through the forward S-box.</summary>
     public static byte Substitute(byte b) => Forward[b];
+
+    // The inverse S-box, BUILT from Forward so it can never disagree with it:
+    // Inverse[Forward[b]] == b for every b. (This works precisely because Forward is a
+    // bijection — the property your SBox_IsABijection test pins.) InvSubBytes uses this.
+    public static readonly byte[] Inverse = BuildInverse();
+
+    static byte[] BuildInverse()
+    {
+        var inv = new byte[256];
+        for (int i = 0; i < 256; i++) inv[Forward[i]] = (byte)i;
+        return inv;
+    }
+
+    /// <summary>Substitute one byte through the INVERSE S-box (decryption).</summary>
+    public static byte InvSubstitute(byte b) => Inverse[b];
 }

@@ -42,7 +42,20 @@ public class Aes128Tests
         byte[] expected = { 0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70,
                             0x80, 0x90, 0xA0, 0xB0, 0xC0, 0xD0, 0xE0, 0xF0 };
 
-        Aes128.EncryptBlock(plaintext, key, rounds: 0).Should().Equal(expected);
+        Aes128.EncryptBlock(plaintext, key, trace: _output.WriteLine, rounds: 0).Should().Equal(expected);
+    }
+
+        [Fact]
+    public void EncryptBlock_OneRounds_ReturnsExpected()
+    {
+        byte[] plaintext = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+                             0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+        byte[] key = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                       0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F };
+        byte[] expected = { 0x89, 0xD8, 0x10, 0xE8, 0x85, 0x5A, 0xCE, 0x68,
+                            0x2D, 0x18, 0x43, 0xD8, 0xCB, 0x12, 0x8F, 0xE4 };
+
+        Aes128.EncryptBlock(plaintext, key, trace: _output.WriteLine, rounds: 1).Should().Equal(expected);
     }
 
     [Fact]
@@ -51,5 +64,37 @@ public class Aes128Tests
         byte[] block = new byte[16];
         Action act = () => Aes128.EncryptBlock(block, block, rounds: 11);
         act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    // The FIPS vector, run backwards: ciphertext → plaintext.
+    [Fact]
+    public void DecryptBlock_MatchesFipsKnownAnswer()
+    {
+        byte[] ciphertext = { 0x69, 0xC4, 0xE0, 0xD8, 0x6A, 0x7B, 0x04, 0x30,
+                              0xD8, 0xCD, 0xB7, 0x80, 0x70, 0xB4, 0xC5, 0x5A };
+        byte[] key = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                       0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F };
+        byte[] expected = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+                            0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+
+        Aes128.DecryptBlock(ciphertext, key, trace: _output.WriteLine).Should().Equal(expected);
+    }
+
+    // The headline: encrypt then decrypt returns the original — for EVERY round count.
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(9)]
+    [InlineData(10)]
+    public void EncryptThenDecrypt_RoundTrips(int rounds)
+    {
+        byte[] plaintext = "Attack at dawn!!"u8.ToArray();   // 16 bytes
+        byte[] key = "YELLOW SUBMARINE"u8.ToArray();         // 16 bytes
+
+        byte[] cipher = Aes128.EncryptBlock(plaintext, key, trace: _output.WriteLine, rounds: rounds);
+        byte[] back = Aes128.DecryptBlock(cipher, key, trace: _output.WriteLine, rounds: rounds);
+
+        back.Should().Equal(plaintext);
     }
 }

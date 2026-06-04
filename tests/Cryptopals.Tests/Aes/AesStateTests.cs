@@ -96,4 +96,26 @@ public class AesStateTests
 
         state.ToBytes().Should().Equal(expected);
     }
+
+    // Each inverse transform must exactly undo its forward. (Because the forwards are already
+    // FIPS-verified, these round-trips also prove the inverses are the TRUE inverses.)
+    [Theory]
+    [InlineData("subbytes")]
+    [InlineData("shiftrows")]
+    [InlineData("mixcolumns")]
+    public void InverseTransform_UndoesItsForward(string which)
+    {
+        byte[] input = { 0x32, 0x88, 0x31, 0xE0, 0x43, 0x5A, 0x31, 0x37,
+                         0xF6, 0x30, 0x98, 0x07, 0xA8, 0x8D, 0xA2, 0x34 };
+        AesState state = AesState.FromBytes(input);
+
+        switch (which)
+        {
+            case "subbytes":   state.SubBytes();   state.InvSubBytes();   break;
+            case "shiftrows":  state.ShiftRows();  state.InvShiftRows();  break;
+            case "mixcolumns": state.MixColumns(); state.InvMixColumns(); break;
+        }
+
+        state.ToBytes().Should().Equal(input);
+    }
 }

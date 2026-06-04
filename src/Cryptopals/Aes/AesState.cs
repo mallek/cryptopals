@@ -88,7 +88,7 @@ public sealed class AesState
     /// </summary>
     public void ShiftRows(Action<string>? trace = null)
     {
-        // TODO: new grid[r, c] = old grid[r, (c + r) % 4].
+        // new grid[r, c] = old grid[r, (c + r) % 4].
         // TRAP: if you write straight into _grid you'll overwrite a byte you still need —
         // snapshot the row (or the whole grid) first. (Same in-place lesson as ToAscii.)
         byte[,] newGrid = new byte[4, 4];
@@ -111,7 +111,7 @@ public sealed class AesState
     /// </summary>
     public void MixColumns(Action<string>? trace = null)
     {
-        // TODO: for each column c, read a0..a3 = grid[0..3, c] into locals FIRST (each output
+        // for each column c, read a0..a3 = grid[0..3, c] into locals FIRST (each output
         // depends on all four inputs — the in-place trap), then write:
         //   grid[0,c] = 2·a0 ⊕ 3·a1 ⊕   a2 ⊕   a3
         //   grid[1,c] =   a0 ⊕ 2·a1 ⊕ 3·a2 ⊕   a3
@@ -136,6 +136,80 @@ public sealed class AesState
             for (int c = 0; c < 4; c++)
             {
                 trace.Detail($"state[{r}, {c}] ← mix of column {c}");
+                _grid[r, c] = localGrid[r, c];
+            }
+        }
+    }
+
+    // ───────────────────────── inverse transforms (decryption) ─────────────────────────
+
+    /// <summary>InvSubBytes: the inverse S-box substitution — undoes SubBytes.</summary>
+    public void InvSubBytes(Action<string>? trace = null)
+    {
+        // grid[r, c] = AesSBox.InvSubstitute(grid[r, c]) for every cell. (Mirror of SubBytes.)
+        for (int c = 0; c < 4; c++)
+        {
+            for (int r = 0; r < 4; r++)
+            {
+                byte before = _grid[r, c];
+                _grid[r, c] = AesSBox.InvSubstitute(before);
+                byte after = _grid[r, c];
+                trace.Detail($"state[{r}, {c}] {before:X2} → {after:X2}");
+            }
+        }
+    }
+
+    /// <summary>InvShiftRows: rotate each row RIGHT by its index — undoes ShiftRows' left rotation.</summary>
+    public void InvShiftRows(Action<string>? trace = null)
+    {
+        // new grid[r, c] = old grid[r, (c - r + 4) % 4].  (+4 keeps the mod non-negative.)
+        // Snapshot first — same in-place trap as ShiftRows.
+        var newGrid = new byte[4, 4];
+        for (int r = 0; r < 4; r++)
+        {
+            for (int c = 0; c < 4; c++)
+            {
+                newGrid[r, c] = _grid[r, (c - r + 4) % 4];
+            }
+        }
+        for (int r = 0; r < 4; r++)
+        {
+            for (int c = 0; c < 4; c++)
+            {
+                trace.Detail($"state[{r}, {c}] ← state[{r}, {(c - r + 4) % 4}]");
+                _grid[r, c] = newGrid[r, c];
+            }
+        }
+    }
+
+    /// <summary>InvMixColumns: same shape as MixColumns but with the INVERSE matrix — undoes MixColumns.</summary>
+    public void InvMixColumns(Action<string>? trace = null)
+    {
+        // read a0..a3 = grid[0..3, c] first, then (matrix [0E 0B 0D 09] rotated per row):
+        //   grid[0,c] = 0E·a0 ⊕ 0B·a1 ⊕ 0D·a2 ⊕ 09·a3
+        //   grid[1,c] = 09·a0 ⊕ 0E·a1 ⊕ 0B·a2 ⊕ 0D·a3
+        //   grid[2,c] = 0D·a0 ⊕ 09·a1 ⊕ 0E·a2 ⊕ 0B·a3
+        //   grid[3,c] = 0B·a0 ⊕ 0D·a1 ⊕ 09·a2 ⊕ 0E·a3
+        // using GaloisField.Multiply — your Multiply handles 0E/0B/0D/09 with no changes.
+        var localGrid = new byte[4, 4];
+        for (int c = 0; c < 4; c++)
+        {
+            byte a0 = _grid[0, c];
+            byte a1 = _grid[1, c];
+            byte a2 = _grid[2, c];
+            byte a3 = _grid[3, c];
+
+            localGrid[0, c] = (byte)(GaloisField.Multiply(0x0E, a0) ^ GaloisField.Multiply(0x0B, a1) ^ GaloisField.Multiply(0x0D, a2) ^ GaloisField.Multiply(0x09, a3));
+            localGrid[1, c] = (byte)(GaloisField.Multiply(0x09, a0) ^ GaloisField.Multiply(0x0E, a1) ^ GaloisField.Multiply(0x0B, a2) ^ GaloisField.Multiply(0x0D, a3));
+            localGrid[2, c] = (byte)(GaloisField.Multiply(0x0D, a0) ^ GaloisField.Multiply(0x09, a1) ^ GaloisField.Multiply(0x0E, a2) ^ GaloisField.Multiply(0x0B, a3));
+            localGrid[3, c] = (byte)(GaloisField.Multiply(0x0B, a0) ^ GaloisField.Multiply(0x0D, a1) ^ GaloisField.Multiply(0x09, a2) ^ GaloisField.Multiply(0x0E, a3));
+        }
+
+        for (int r = 0; r < 4; r++)
+        {
+            for (int c = 0; c < 4; c++)
+            {
+                trace.Detail($"state[{r}, {c}] ← inverse mix of column {c}");
                 _grid[r, c] = localGrid[r, c];
             }
         }

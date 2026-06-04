@@ -40,4 +40,32 @@ public static class Aes128
 
         return state.ToBytes();
     }
+
+    /// <summary>
+    /// Decrypt one 16-byte block — EncryptBlock run backwards. Same <paramref name="rounds"/>
+    /// contract: DecryptBlock(EncryptBlock(p, k, N), k, N) == p for every N from 0 to 10.
+    /// </summary>
+    public static byte[] DecryptBlock(byte[] ciphertext, byte[] key, int rounds = 10,
+                                      Action<string>? trace = null, Action<int, byte[]>? onRound = null)
+    {
+        if (ciphertext.Length != 16) throw new ArgumentException("Block is exactly 16 bytes", nameof(ciphertext));
+        if (key.Length != 16) throw new ArgumentException("AES-128 key is exactly 16 bytes", nameof(key));
+        if (rounds < 0 || rounds > 10) throw new ArgumentOutOfRangeException(nameof(rounds), "AES-128 runs 0–10 rounds");
+
+        byte[][] roundKeys = AesKeySchedule.Expand(key);
+        AesState state = AesState.FromBytes(ciphertext);
+
+        // the reverse of EncryptBlock's loop (undo each round in reverse order):
+          for (int round = rounds; round >= 1; round--)
+          {
+              state.AddRoundKey(roundKeys[round]);          // undo AddRoundKey (XOR self-inverse)
+              if (round < 10) state.InvMixColumns();        // mirror the MixColumns skip
+              state.InvShiftRows();
+              state.InvSubBytes();
+              state.Render($"after inv-round {round}", trace);
+              onRound?.Invoke(round, state.ToBytes());
+          }
+          state.AddRoundKey(roundKeys[0]);                  // undo the initial whitening
+          return state.ToBytes();
+    }
 }
