@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# writeup trace captures (scratch — trimmed into the .md files)
+writeups/Set01/_traces/
