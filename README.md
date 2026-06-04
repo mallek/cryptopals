@@ -31,3 +31,4 @@ dotnet test --logger "console;verbosity=detailed"       # see the bit-level trac
 - [x] Set 1 · Challenge 5 — implement repeating-key XOR
 - [x] Set 1 · Challenge 6 — break repeating-key XOR
 - [x] Set 1 · Challenge 7 — AES-128 in ECB mode (hand-rolled AES, no library)
+- [x] Set 1 · Challenge 8 — detect AES-128-ECB (repeated-block fingerprint)
