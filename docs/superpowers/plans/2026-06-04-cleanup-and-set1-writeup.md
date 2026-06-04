@@ -314,7 +314,19 @@ src/Cryptopals/Aes/            # hand-rolled AES-128
 src/Cryptopals/Set01/          # challenge solvers — thin compositions of primitives
 ```
 
-- [ ] **Step 4: Run the FULL suite**
+- [ ] **Step 4: Guard — no built-in crypto/encoding crept in**
+
+This refactor must add ZERO new dependencies and ZERO built-in crypto/encoding APIs — the whole
+library is hand-rolled. Verify:
+```powershell
+git -C "D:/Skunkworks/cryptopals" diff --stat HEAD~4 -- '*.csproj' Directory.Packages.props
+git -C "D:/Skunkworks/cryptopals" grep -nE "System\.Security\.Cryptography|Convert\.(To|From)Base64String|Convert\.(To|From)HexString" -- 'src/**/*.cs' 'tests/**/*.cs'
+```
+Expected: the first command prints NOTHING (no project/package files changed by the refactor). The
+second command prints NOTHING (no forbidden APIs anywhere). If either prints output, stop and remove
+the offending change before continuing.
+
+- [ ] **Step 5: Run the FULL suite**
 
 Run:
 ```powershell
@@ -322,7 +334,7 @@ dotnet test
 ```
 Expected: every test PASSES (slow + viewer included). This is the pre-writeup green checkpoint.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```powershell
 git -C "D:/Skunkworks/cryptopals" add -A
