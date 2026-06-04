@@ -1,4 +1,6 @@
-namespace Cryptopals.Tests;
+using Cryptopals.Codecs;
+
+namespace Cryptopals.Tests.Codecs;
 
 public class HexTests
 {

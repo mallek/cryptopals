@@ -1,4 +1,5 @@
 using Cryptopals;
+using Cryptopals.Codecs;
 
 namespace Cryptopals.Tests;
 

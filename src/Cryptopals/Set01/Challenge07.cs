@@ -1,4 +1,5 @@
 using Cryptopals.Aes;
+using Cryptopals.Codecs;
 
 namespace Cryptopals.Set01;
 

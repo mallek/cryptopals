@@ -1,4 +1,4 @@
-namespace Cryptopals;
+namespace Cryptopals.Codecs;
 
 /// <summary>
 /// Base64 codec: raw bytes ↔ base64 text.
